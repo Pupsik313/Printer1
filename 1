@@ -1,0 +1,35 @@
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local Workspace = game:GetService("Workspace")
+
+local GAME_ID = 7239319209 -- Replace with the actual game ID
+
+local function onCharacterAdded(character)
+	local moneyPrinter = Workspace:FindFirstChild("Money Printer")
+	if moneyPrinter then
+		local proximityPrompt = moneyPrinter:FindFirstChildOfClass("ProximityPrompt")
+		if proximityPrompt then
+			character:MoveTo(moneyPrinter.Position)
+			proximityPrompt:InputHoldBegin()
+		end
+	else
+		-- Server hop logic
+		local servers = TeleportService:GetPlayerPlaceInstanceAsync(GAME_ID)
+		for _, server in servers do
+			if server.Id ~= game.JobId then
+				TeleportService:TeleportToPlaceInstance(GAME_ID, server.Id, Players.LocalPlayer)
+				break
+			end
+		end
+	end
+end
+
+Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(onCharacterAdded)
+end)
+
+for _, player in Players:GetPlayers() do
+	if player.Character then
+		onCharacterAdded(player.Character)
+	end
+end
